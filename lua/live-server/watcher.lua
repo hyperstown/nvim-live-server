@@ -10,13 +10,13 @@ local function simple_watch(dir, on_change, recursive)
   assert(handle, err)
 
   if not handle then
-    vim.notify("Error setting up watcher")
+    vim.notify("Live server has encountered an error  while setting up file watcher")
     return
   end
 
   handle:start(dir, { recursive = recursive }, function(err, filename)
     if err then
-      vim.notify("File watching error")
+      vim.notify("Live server file watcher error occurred")
       return
     end
     if not filename then return end
@@ -52,8 +52,11 @@ function M.watch(dir, on_change)
   -- cat /proc/sys/fs/inotify/max_user_watches --> 524288
   -- this might seem small but even the largest project I could find with node_modules
   -- included had 13k dirs. It should be ok. Maybe later add option to exclude dirs.
-  if uv.os_uname().sysname == "Linux" then linux_watch(dir, on_change) end
-  simple_watch(dir, on_change, true)
+  if uv.os_uname().sysname == "Linux" then 
+    linux_watch(dir, on_change)
+  else
+    simple_watch(dir, on_change, true)
+  end
 end
 
 return M

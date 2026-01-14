@@ -16,7 +16,9 @@ local inject_snippet = [[
   });
 
   // Reload when SSE message arrives
-  es.onmessage = () => location.reload();
+  es.onmessage = (msg) => {
+    if (msg.data === 'reload') location.reload();
+  };
 })();
 </script>
 ]]
@@ -113,6 +115,7 @@ local function handle_request(client, raw)
     }, "\r\n"))
 
     table.insert(M.sse_clients, client)
+    client:write("data: start\n\n")
     return
   end
 
