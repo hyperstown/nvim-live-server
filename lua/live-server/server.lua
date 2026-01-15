@@ -32,7 +32,7 @@ local function inject(html, path)
     return
   end
 
-  if path:match("%.html$") then return (html:gsub("</body>", inject_snippet .. "\n</body>")) end
+  if path:match("%.html?$") then return (html:gsub("</body>", inject_snippet .. "\n</body>")) end
   return html
 end
 
