@@ -2,8 +2,8 @@
 
 A simple HTTP server with live reload for HTML, CSS, JS files written in **just lua**.
 
-> [!WARNING]  
-> This plugin is in alpha! It's not guaranteed to work with more complex use-cases!
+> [!NOTE]  
+> This plugin is in beta! Things should work but small bugs might still be hiding somewhere. New features will also be introduced.
 
 
 
