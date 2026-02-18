@@ -7,6 +7,8 @@ M.opts = {
   host = "0.0.0.0",
   port = 8080,
   bind_attempts = 2,
+  ignore_files = {},
+  ignore_dotfiles = true,
 }
 
 ---@class live_server.Opts
@@ -21,7 +23,7 @@ function M.start()
   local root = vim.fn.getcwd()
 
   server.start(root, M.opts)
-  watcher.watch(root, function() server.reload() end)
+  watcher.watch(root, function() server.reload() end, M.opts)
   vim.cmd("redrawstatus")
 end
 
