@@ -31,7 +31,7 @@ https://github.com/user-attachments/assets/8dba8842-a7a8-4374-a7ee-f15e1893e3f5
     host = "127.0.0.1" -- optional, default 0.0.0.0
     port = 5550, -- optional, default 8080
     bind_attempts = 3, -- optional, default 2
-    ignore_files = {"*.env"}, -- optional, default {}
+    ignore_files = { "*.env" }, -- optional, default {}
     ignore_dotfiles = true, -- optional default true
   },
 },
