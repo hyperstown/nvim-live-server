@@ -9,12 +9,16 @@ M.opts = {
   bind_attempts = 2,
   ignore_files = {},
   ignore_dotfiles = true,
+  open_browser = true,
 }
 
 ---@class live_server.Opts
 ---@field port integer
 ---@field host string
 ---@field bind_attempts integer
+---@field ignore_files string[]
+---@field ignore_dotfiles boolean
+---@field open_browser boolean
 
 ---@param opts live_server.Opts
 function M.setup(opts) M.opts = vim.tbl_deep_extend("force", M.opts, opts) end

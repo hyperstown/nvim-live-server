@@ -33,6 +33,7 @@ https://github.com/user-attachments/assets/8dba8842-a7a8-4374-a7ee-f15e1893e3f5
     bind_attempts = 3, -- optional, default 2
     ignore_files = { "*.env" }, -- optional, default {}
     ignore_dotfiles = true, -- optional default true
+    open_browser = true, -- optional, default true
   },
 },
 ```
@@ -123,7 +124,6 @@ even with realtime edits but for me every package was either too complex or it d
 - Directory browser
 - Improved code injection
 - Healthcheck
-- Auto open browser
 
 ## Acknowledgements
 

@@ -250,8 +250,11 @@ function M.start(root, config)
   M.running = true
   M.port = server:getsockname().port
   M.host = server:getsockname().ip
+  local url = ("http://%s:%d"):format(M.host, M.port)
   local elapsed_ms = (uv.hrtime() - start) / 1e6
-  vim.notify(("Server started in %.3fms at http://%s:%d"):format(elapsed_ms, M.host, M.port))
+  vim.notify(("Server started in %.3fms at %s"):format(elapsed_ms, url))
+
+  if config.open_browser then vim.ui.open(url) end
 end
 
 function M.stop()
