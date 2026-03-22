@@ -118,6 +118,9 @@ local function handle_request(client, raw)
     return
   end
 
+  -- ignore query params
+  path = path:gsub("[?#].*$", "")
+
   if path == "/__live_reload" then
     client:write(table.concat({
       "HTTP/1.1 200 OK",
