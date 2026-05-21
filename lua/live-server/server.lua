@@ -25,11 +25,13 @@ local inject_snippet = [[
 
 ---@param html string
 ---@param path string
----@return string?
+---@return string
 local function inject(html, path)
   if not html:find("</body>") then
-    vim.notify("Live reload is not supported without a body tag", vim.log.levels.WARN)
-    return
+    vim.schedule(function()
+      vim.notify("Live reload is not supported without a body tag", vim.log.levels.WARN)
+    end)
+    return html
   end
 
   if path:match("%.html?$") then return (html:gsub("</body>", inject_snippet .. "\n</body>")) end
@@ -90,7 +92,7 @@ local function html_response(text) return ("<!DOCTYPE html><html><body>%s</body>
 ---@param status string
 ---@param headers {[string]: string}
 ---@param body string?
-local function send(client, status, headers, body)
+local function send(client, status, headers, body, cb)
   local lines = { ("HTTP/1.1 %s"):format(status) }
   for k, v in pairs(headers) do
     table.insert(lines, ("%s: %s"):format(k, v))
@@ -98,7 +100,7 @@ local function send(client, status, headers, body)
   table.insert(lines, "")
   table.insert(lines, body or "")
 
-  client:write(table.concat(lines, "\r\n"))
+  client:write(table.concat(lines, "\r\n"), cb)
 end
 
 ---@param client uv.uv_tcp_t
@@ -144,8 +146,10 @@ local function handle_request(client, raw)
   if not file then
     send(client, "404 Not Found", {
       ["Content-Type"] = "text/html",
-    }, html_response("Not Found"))
-    client:close()
+    }, html_response("Not Found"), function()
+      client:close()
+    end)
+
     return
   end
 
@@ -154,8 +158,9 @@ local function handle_request(client, raw)
   if not body then
     send(client, "404 Not Found", {
       ["Content-Type"] = "text/html",
-    }, html_response("Not Found"))
-    client:close()
+    }, html_response("Not Found"), function()
+      client:close()
+    end)
     return
   end
 
@@ -168,9 +173,9 @@ local function handle_request(client, raw)
     ["Content-Length"] = tostring(#body),
     ["Cache-Control"] = "no-cache",
     ["Access-Control-Allow-Origin"] = "*",
-  }, body)
-
-  client:close()
+  }, body, function()
+      client:close()
+    end)
 end
 
 -- -----------------------------
@@ -202,7 +207,9 @@ function M.start(root, config)
 
     local client = uv.new_tcp()
     if not client then
-      vim.notify("Live server encounter TCP error", vim.log.levels.ERROR)
+      vim.schedule(function()
+        vim.notify("Live server encounter TCP error", vim.log.levels.ERROR)
+      end)
       return
     end
 
@@ -271,10 +278,14 @@ function M.stop()
 end
 
 function M.reload()
-  for i, client in ipairs(M.sse_clients) do
+  -- reverse loop to safely remove clients from the table
+  for i = #M.sse_clients, 1, -1 do
+    local client = M.sse_clients[i]
     local _, err = client:write("data: reload\n\n")
-
-    if err then table.remove(M.sse_clients, i) end
+    if err then
+      client:close()
+      table.remove(M.sse_clients, i)
+    end
   end
 end
 
