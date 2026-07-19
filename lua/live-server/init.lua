@@ -27,7 +27,7 @@ function M.start()
   local root = vim.fn.getcwd()
 
   server.start(root, M.opts)
-  watcher.watch(root, function() server.reload() end, M.opts)
+  watcher.watch(root, function(filename) server.reload(filename) end, M.opts)
   vim.cmd("redrawstatus")
 end
 

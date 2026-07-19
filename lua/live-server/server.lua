@@ -15,9 +15,19 @@ local inject_snippet = [[
     es.close(); // explicitly close SSE
   });
 
+  // Swap stylesheets in place with a cache-busting query param
+  const refreshCSS = () => {
+    for (const link of document.querySelectorAll('link[rel="stylesheet"]')) {
+      const url = new URL(link.href);
+      url.searchParams.set('_lr', Date.now());
+      link.href = url.href;
+    }
+  };
+
   // Reload when SSE message arrives
   es.onmessage = (msg) => {
     if (msg.data === 'reload') location.reload();
+    else if (msg.data === 'refreshcss') refreshCSS();
   };
 })();
 </script>
@@ -277,11 +287,13 @@ function M.stop()
   vim.notify("Live server stopped")
 end
 
-function M.reload()
+---@param filename string? changed file; CSS files refresh stylesheets without a full reload
+function M.reload(filename)
+  local msg = (filename and filename:match("%.css$")) and "refreshcss" or "reload"
   -- reverse loop to safely remove clients from the table
   for i = #M.sse_clients, 1, -1 do
     local client = M.sse_clients[i]
-    local _, err = client:write("data: reload\n\n")
+    local _, err = client:write(("data: %s\n\n"):format(msg))
     if err then
       client:close()
       table.remove(M.sse_clients, i)

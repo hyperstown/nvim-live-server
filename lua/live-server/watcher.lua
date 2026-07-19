@@ -28,7 +28,7 @@ local function should_ignore(path)
 end
 
 ---@param dir string
----@param on_change fun()
+---@param on_change fun(filename: string)
 ---@param recursive boolean?
 local function simple_watch(dir, on_change, recursive)
   local handle, err = uv.new_fs_event()
@@ -48,12 +48,12 @@ local function simple_watch(dir, on_change, recursive)
 
     if should_ignore(filename) then return end
 
-    vim.schedule(function() on_change() end)
+    vim.schedule(function() on_change(filename) end)
   end)
 end
 
 ---@param root_dir string
----@param on_change fun()
+---@param on_change fun(filename: string)
 local function linux_watch(root_dir, on_change)
   if should_ignore(root_dir) then return end
 
@@ -74,7 +74,7 @@ local function linux_watch(root_dir, on_change)
 end
 
 ---@param dir string
----@param on_change fun()
+---@param on_change fun(filename: string)
 ---@param opts live_server.Opts
 function M.watch(dir, on_change, opts)
   config = {

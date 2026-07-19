@@ -12,7 +12,7 @@ https://github.com/user-attachments/assets/8dba8842-a7a8-4374-a7ee-f15e1893e3f5
 
 ## Features:
 
-- Extremely light (Less than 500 lines of code!)
+- Extremely light (Less than 600 lines of code!)
 - No dependencies (Aside NVIM ofc)
 - Blazingly fast 🚀 (Starts and serves in less than milisecond!)
 - Start or Stop server by a single click from status bar.
@@ -120,7 +120,6 @@ even with realtime edits but for me every package was either too complex or it d
 
 ## Planned features
 
-- Seamless CSS reload
 - Directory browser
 - Improved code injection
 - Healthcheck
