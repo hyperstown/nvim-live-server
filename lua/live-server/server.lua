@@ -98,6 +98,33 @@ end
 ---@return string
 local function html_response(text) return ("<!DOCTYPE html><html><body>%s</body></html>"):format(text) end
 
+---@param dir string absolute path of the directory
+---@param path string request path, used as the title
+---@return string
+local function directory_listing(dir, path)
+  local items = {}
+  local scanner = uv.fs_scandir(dir)
+  while scanner do
+    local name, type = uv.fs_scandir_next(scanner)
+    if not name then break end
+    table.insert(items, type == "directory" and name .. "/" or name)
+  end
+
+  -- directories first, then alphabetically
+  table.sort(items, function(a, b)
+    local a_dir, b_dir = a:sub(-1) == "/", b:sub(-1) == "/"
+    if a_dir ~= b_dir then return a_dir end
+    return a < b
+  end)
+  if path ~= "/" then table.insert(items, 1, "../") end
+
+  local links = {}
+  for _, name in ipairs(items) do
+    table.insert(links, ('<li><a href="%s">%s</a></li>'):format(name, name))
+  end
+  return html_response(("<h1>Index of %s</h1><ul>%s</ul>"):format(path, table.concat(links)))
+end
+
 ---@param client uv.uv_tcp_t
 ---@param status string
 ---@param headers {[string]: string}
@@ -148,7 +175,33 @@ local function handle_request(client, raw)
     return
   end
 
-  if path:sub(-1) == "/" then path = path .. "index.html" end
+  if path:sub(-1) == "/" then
+    if uv.fs_stat(root_dir .. path .. "index.html") then
+      path = path .. "index.html"
+    else
+      local body = inject(directory_listing(root_dir .. path, path), "index.html")
+      send(client, "200 OK", {
+        ["Content-Type"] = "text/html",
+        ["Content-Length"] = tostring(#body),
+        ["Cache-Control"] = "no-cache",
+      }, body, function()
+        client:close()
+      end)
+      return
+    end
+  else
+    -- redirect /dir to /dir/ so relative links resolve
+    local stat = uv.fs_stat(root_dir .. path)
+    if stat and stat.type == "directory" then
+      send(client, "301 Moved Permanently", {
+        ["Location"] = path .. "/",
+        ["Content-Length"] = "0",
+      }, nil, function()
+        client:close()
+      end)
+      return
+    end
+  end
 
   local file_path = root_dir .. path
   local file = io.open(file_path, "rb")
